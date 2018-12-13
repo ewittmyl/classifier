@@ -164,13 +164,17 @@ def merge_cat(UT="UT4"):
         cat = tab.copy()
         merged = open('merged'+UT+'.log','a+')
         merged.write(all_files[0]+'\n')
-        for i, file in enumerate(all_files[1:]):
-            print('merging table: {} ({}/{})'.format(file,i+2,len(all_files)))
-            tab = pd.read_csv(file)
-            cat = pd.merge(cat, tab, how='outer')
+        try:
+            for i, file in enumerate(all_files[1:]):
+                print('merging table: {} ({}/{})'.format(file,i+2,len(all_files)))
+                tab = pd.read_csv(file)
+                cat = pd.merge(cat, tab, how='outer')
+                merged.write(file+'\n')
             cat.to_csv('catalog'+UT+'.csv', index=False, header=True)
-            merged.write(file+'\n')
-        merged.close()
+            merged.close()
+        except:
+            cat.to_csv('catalog'+UT+'.csv', index=False, header=True)
+            merged.close()
     else:
         cat = pd.read_csv('catalog'+UT+'.csv')
         all_files = glob.glob("./results/20*/"+UT+"/*")
@@ -181,13 +185,17 @@ def merge_cat(UT="UT4"):
         else:
             non_processed = list(set(all_files) - set(merged))
             merged = open('merged'+UT+'.log','a+')
-            for i, new_img in enumerate(non_processed):
-                print('merging table: {} ({}/{})'.format(new_img,i+1,len(non_processed)))
-                tab = pd.read_csv(new_img)
-                cat = pd.merge(cat, tab, how='outer')
+            try:
+                for i, new_img in enumerate(non_processed):
+                    print('merging table: {} ({}/{})'.format(new_img,i+1,len(non_processed)))
+                    tab = pd.read_csv(new_img)
+                    cat = pd.merge(cat, tab, how='outer')
+                    merged.write(new_img+'\n')
                 cat.to_csv('catalog'+UT+'.csv', index=False, header=True)
-                merged.write(new_img+'\n')
-            merged.close()
+                merged.close()
+            except:
+                cat.to_csv('catalog'+UT+'.csv', index=False, header=True)
+                merged.close()
     cat = pd.read_csv('catalog'+UT+'.csv')
     m = Table(cat.values, names=cat.columns)
     hdu = fits.table_to_hdu(m)
