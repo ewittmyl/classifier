@@ -3,7 +3,7 @@ import os
 from functions import *
 from pathlib import Path
 
-def main(path="/mnt3/data/public/goto/commissioning/pipeline/"):
+def main(path):
     """
     This is the main script for operating on the 
     pipeline data and performing machine learning to 
@@ -29,7 +29,8 @@ def main(path="/mnt3/data/public/goto/commissioning/pipeline/"):
             Popen('mkdir '+date, shell=True)
             for i in ['1','2','3','4']:
                 Popen('mkdir '+date+'/UT'+i, shell=True)
-            images = os.listdir(path+date+"/final/")
+            images = glob.glob(path+date+"/final/*-median.fits")
+            images = [i.split("/")[-1] for i in images]
             for i, image in enumerate(images):
                 print("processing: {}/{}".format(i+1,len(images)))
                 prep(path,date,image)
@@ -59,8 +60,8 @@ def main(path="/mnt3/data/public/goto/commissioning/pipeline/"):
                     P = Popen('rm -rf '+image[:-5]+'.cat', shell=True)
                     P.wait()
         elif date_dir.exists() == 1:
-            all_date_files = os.listdir(path+date+"/final/")
-            all_date_files = [k.split(".")[0] for k in all_date_files]
+            all_date_files = glob.glob(path+date+"/final/*-median.fits")
+            all_date_files = [i.split("/")[-1].split(".")[0] for i in all_date_files]
             processed_date_files = glob.glob(date+"/*/*")
             processed_date_files = [i.split("/")[-1].split(".")[0] for i in processed_date_files]
             to_be_processed = list(set(all_date_files)-set(processed_date_files))

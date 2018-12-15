@@ -1,3 +1,3 @@
 from core import main
 
-main()
+main("/mnt3/data/public/goto/commissioning/pipeline/")
