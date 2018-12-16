@@ -150,7 +150,7 @@ def gen_tab(cat):
     tab.to_csv(cat[:-4]+'.csv', index=False, header=True)
 
 
-def merge_cat(UT="UT4"):
+def merge_cat(UT):
     """
     This is the code for merging all individual catalog of each image together.
     """
