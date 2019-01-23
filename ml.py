@@ -1,15 +1,17 @@
 from astropy.table import Table
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from python_codes.ml_supports import *
 
 class features:
     def __init__(self):
         self.feature_names = list(self.create().columns)[:-1]
         self.features = self.create()[self.feature_names].values
         self.targets = self.create()['class'].values
-        self.target_names = ['galaxy', 'star']
+        self.target_names = ['1', '2'] # 1=galaxy, 2=star
     
     def create(self, tab='sdss.fits'):
         cat = Table.read(tab,format='fits')
@@ -21,17 +23,18 @@ class features:
 #        cat = cat[cat.MAG_APER14 > 80]
         return cat
 
-def rfc(n_estimators=100,max_features=np.sqrt(len(features().feature_names)).astype("int"),random_state=0):
-    feat = features()
-    X_train, X_test, y_train, y_test = train_test_split(
-        feat.features, feat.targets, random_state=random_state)
+def rfc(n_estimators=100,max_features=np.sqrt(len(features().feature_names)).astype("int"), k=10, random_state=1027):
+    table = features()
     forest = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features, random_state=random_state)
-    forest.fit(X_train, y_train)
-    print("Accuracy on training set: {:.3f}".format(forest.score(X_train, y_train))) 
-    print("Accuracy on test set: {:.3f}".format(forest.score(X_test, y_test)))
-    num_g = np.sum(feat.create()['class'] == '1')
-    num_s = np.sum(feat.create()['class'] == '2')
-    per = num_g/(num_g+num_s)
-    print('number of galaxies: {}'.format(num_g))
-    print('number of stars: {}'.format(num_s))
-    print('percentage of galaxies over the sample: {}'.format(per))
+
+    pred = kfold_predictions(forest, table.features, table.targets, k)
+    
+    score = calculate_accuracy(pred, table.targets)
+    print("Accuracy score: {}".format(score))
+
+    model_cm = confusion_matrix(y_true=table.targets, y_pred=pred, labels=table.target_names)
+
+    # Plot the confusion matrix using the provided functions.
+    plt.figure()
+    plot_confusion_matrix(model_cm, classes=table.target_names, normalize=False)
+    plt.show()
